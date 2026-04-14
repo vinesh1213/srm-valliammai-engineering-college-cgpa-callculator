@@ -576,13 +576,26 @@ function renderOCRTable(entries) {
           return `
             <tr>
               <td class="mono">${e.code}</td>
-              <td style="color:${match ? 'var(--text-secondary)' : 'var(--danger)'}">${match ? match.name : "⚠ Unknown code"}</td>
               <td>
-                <select class="grade-select ocr-grade-select ${getGradeClass(e.grade)}" data-code="${e.code}">
+                ${match ? `<span style="color:var(--text-secondary)">${match.name}</span>` : `
+                  <select class="ocr-map-select control-select" data-original="${e.code}" style="padding:4px 8px; font-size:0.7rem; width:100%; min-width:140px; border-color:var(--warning);">
+                    <option value="">⚠ Unknown (Map to...)</option>
+                    ${Object.entries(ECE_R2023).map(([sem, subjects]) => {
+                      const electives = subjects.filter(s => s.type === "elective" || s.type === "project");
+                      if (electives.length === 0) return "";
+                      return `<optgroup label="Semester ${sem}">
+                        ${electives.map(el => `<option value="${el.code}">${el.name} (${el.code})</option>`).join("")}
+                      </optgroup>`;
+                    }).join("")}
+                  </select>
+                `}
+              </td>
+              <td>
+                <select class="grade-select ocr-grade-select ${getGradeClass(e.grade)}" data-code="${e.code}" data-original-code="${e.code}">
                   ${GRADES.map(g => `<option value="${g}" ${e.grade === g ? "selected" : ""}>${g}</option>`).join("")}
                 </select>
               </td>
-              <td class="${match ? 'status-ok' : 'status-unknown'}">${match ? "✓ Matched" : "✗ Unknown"}</td>
+              <td class="${match ? 'status-ok' : 'status-unknown'}">${match ? "✓ Matched" : "⚠ Map required"}</td>
             </tr>
           `;
         }).join("")}
@@ -599,6 +612,41 @@ function renderOCRTable(entries) {
     sel.addEventListener("change", () => {
       gradeMap[sel.dataset.code] = sel.value;
       sel.className = `grade-select ocr-grade-select ${getGradeClass(sel.value)}`;
+    });
+  });
+
+  // Bind mapping selects for unknown subjects
+  document.querySelectorAll(".ocr-map-select").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const originalCode = sel.dataset.original;
+      const mappedCode = sel.value;
+      const gradeSel = document.querySelector(`.ocr-grade-select[data-original-code="${originalCode}"]`);
+      
+      // Update gradeMap mapping
+      delete gradeMap[gradeSel.dataset.code];
+      gradeSel.dataset.code = mappedCode || originalCode;
+      if (gradeSel.value) gradeMap[gradeSel.dataset.code] = gradeSel.value;
+      
+      // Update status text
+      const statusTd = sel.closest("tr").querySelector(".status-unknown, .status-ok");
+      if (mappedCode) {
+        statusTd.textContent = "✓ Mapped";
+        statusTd.className = "status-ok";
+        sel.style.borderColor = "var(--success)";
+        
+        // Auto-select the semester
+        for (const [sem, subjects] of Object.entries(ECE_R2023)) {
+          if (subjects.find(s => s.code === mappedCode)) {
+            selectedSemesters.add(sem);
+            document.querySelector(`.sem-pill[data-sem="${sem}"]`)?.classList.add("active");
+            break;
+          }
+        }
+      } else {
+        statusTd.textContent = "⚠ Map required";
+        statusTd.className = "status-unknown";
+        sel.style.borderColor = "var(--warning)";
+      }
     });
   });
 

@@ -50,7 +50,7 @@ export const ECE_R2023 = {
     { code: "EC3563", name: "VLSI and Chip Design", credits: 3, type: "theory" },
     { code: "PEC10X", name: "Professional Elective I", credits: 3, type: "elective" },
     { code: "PEC20X", name: "Professional Elective II", credits: 3, type: "elective" },
-    { code: "CE3531", name: "Environmental Studies", credits: 2, type: "MC" },
+    { code: "CE3531", name: "Environmental Studies", credits: 2, type: "theory" },
     { code: "EC3564", name: "Embedded Systems and IoT Design", credits: 4, type: "theory" },
     { code: "EC3566", name: "VLSI Laboratory", credits: 1.5, type: "lab" },
     { code: "EC3567", name: "Analog and Digital Communication Laboratory", credits: 1.5, type: "lab" }

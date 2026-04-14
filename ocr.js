@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════
 // Tesseract.js is loaded globally via <script> tag in index.html
 
+import { API_OCR_ENDPOINT } from "./config.js";
 // ── Client-Side Deduplication Cache ──────────────────────
 // Prevents re-calling the backend if the same image is re-submitted
 const _ocrCache = new Map(); // imageHash → { results, timestamp }
@@ -53,7 +54,7 @@ export async function extractGradesFromImage(imageFile, onProgress = () => {}) {
   // ── Step 2: Try Google Vision via backend proxy ────────
   onProgress(2, "Scanning with Google Vision AI...");
   try {
-    const response = await fetch("/api/ocr", {
+    const response = await fetch(API_OCR_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ base64 })

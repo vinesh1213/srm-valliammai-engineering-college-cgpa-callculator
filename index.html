@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Smart CGPA Calculator for ECE R2023 students at SRM Valliammai Engineering College. Calculate GPA, CGPA, detect backlogs, and upload result screenshots for instant grade extraction."/>
+  <meta name="theme-color" content="#0a0e1a"/>
+  <title>Smart CGPA Calculator · ECE R2023</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>"/>
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header animate">
+    <div class="header-icon">◈</div>
+    <div class="header-text">
+      <h1>Smart CGPA Calculator</h1>
+      <div class="header-meta">ECE · R2023 · SRM Valliammai Engineering College</div>
+    </div>
+    <div class="header-badge">
+      <span class="dot"></span>
+      Client-Side · No Data Stored
+    </div>
+  </header>
+
+  <!-- ═══ APP LAYOUT ═══ -->
+  <div class="app-layout">
+
+    <!-- ═══ LEFT: INPUT PANEL ═══ -->
+    <main>
+
+      <!-- Controls Row -->
+      <div class="controls-row animate delay-1">
+        <select class="control-select" id="regulation-select">
+          <option>R2023</option>
+        </select>
+        <select class="control-select" id="dept-select">
+          <option>ECE</option>
+        </select>
+        <!-- Mode Toggle -->
+        <div class="toggle-wrapper">
+          <div class="toggle-option active" data-mode="manual">Manual Entry</div>
+          <div class="toggle-option" data-mode="upload">Upload Result</div>
+        </div>
+      </div>
+
+      <!-- ═══ MANUAL MODE ═══ -->
+      <section id="manual-section">
+        <!-- Semester Pills -->
+        <div class="sem-selector animate delay-2">
+          <p class="section-label">Select Semesters</p>
+          <div class="sem-pills">
+            <div class="sem-pill" data-sem="1">1</div>
+            <div class="sem-pill" data-sem="2">2</div>
+            <div class="sem-pill" data-sem="3">3</div>
+            <div class="sem-pill" data-sem="4">4</div>
+            <div class="sem-pill" data-sem="5">5</div>
+            <div class="sem-pill" data-sem="6">6</div>
+            <div class="sem-pill" data-sem="7">7</div>
+            <div class="sem-pill" data-sem="8">8</div>
+          </div>
+        </div>
+
+        <!-- Subject Cards (dynamically injected) -->
+        <div id="subject-cards">
+          <div class="empty-state animate delay-3">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">Select semesters above to begin entering your grades</div>
+            <div class="empty-state-hint">You can select multiple semesters for CGPA calculation</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ UPLOAD MODE ═══ -->
+      <section id="upload-section" style="display:none">
+        <div class="dropzone animate delay-2" id="dropzone">
+          <input type="file" id="result-upload" accept="image/*" hidden/>
+          <div class="dropzone-icon">📸</div>
+          <p class="dropzone-text">Drop your result screenshot here</p>
+          <p class="dropzone-sub">or <span class="link" onclick="document.getElementById('result-upload').click()">click to browse</span></p>
+          <p class="dropzone-sub" style="margin-top:8px; font-size:0.65rem; color:var(--text-dim)">Supports JPG, PNG, WebP · Max 10MB</p>
+          <div class="dropzone-preview" id="image-preview"></div>
+        </div>
+
+        <!-- 3-Step Progress Stepper -->
+        <div class="ocr-stepper" id="ocr-stepper">
+          <div class="ocr-step" id="ocr-step-1">
+            <div class="ocr-step-icon">⚡</div>
+            <div class="ocr-step-label">Compress</div>
+          </div>
+          <div class="ocr-step-connector"></div>
+          <div class="ocr-step" id="ocr-step-2">
+            <div class="ocr-step-icon">🔍</div>
+            <div class="ocr-step-label">Scan</div>
+          </div>
+          <div class="ocr-step-connector"></div>
+          <div class="ocr-step" id="ocr-step-3">
+            <div class="ocr-step-icon">✓</div>
+            <div class="ocr-step-label">Parse</div>
+          </div>
+        </div>
+
+        <button id="extract-btn" class="btn-primary" style="width:100%">◈ Extract Grades</button>
+        <p class="ocr-status" id="ocr-status"></p>
+        <div id="ocr-result-table"></div>
+      </section>
+
+    </main>
+
+    <!-- ═══ RIGHT: RESULTS PANEL ═══ -->
+    <aside class="results-panel animate delay-3">
+
+      <!-- Performance Card -->
+      <div class="results-card">
+        <h2>Your Performance</h2>
+
+        <!-- CGPA Ring -->
+        <div class="cgpa-ring-container">
+          <div id="cgpa-ring"></div>
+          <div class="cgpa-value-overlay">
+            <div class="cgpa-number" id="cgpa-number">0.00</div>
+            <div class="cgpa-label">CGPA</div>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <!-- Semester Breakdown -->
+        <div id="sem-breakdown"></div>
+
+        <!-- Grade Distribution -->
+        <div id="grade-distribution"></div>
+      </div>
+
+      <!-- Backlog Warnings -->
+      <div id="backlog-section"></div>
+
+    </aside>
+
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <p>Smart CGPA Calculator · ECE R2023 · SRM Valliammai Engineering College</p>
+    <p style="margin-top:4px">Built with precision. All calculations happen in your browser.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

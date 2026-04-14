@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: smart-cgpa-calculator
+    env: node
+    region: singapore   # closest to India
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GOOGLE_VISION_API_KEY
+        sync: false       # set manually in Render dashboard — never hardcode
+      - key: FRONTEND_ORIGIN
+        sync: false       # e.g. https://your-app.onrender.com
